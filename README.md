@@ -1,1 +1,1 @@
-# Console Information Panel
+# Console Section

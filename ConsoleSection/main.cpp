@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
@@ -48,8 +48,8 @@ void WriteInInfo(const wchar_t* output)
 
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), WritingCoords);
     
-    std::wstring OutputString = std::wstring(columns, '=');
-
+    std::wstring OutputString = std::wstring(columns, L'━');
+    
     OutputString += L'\n';
     OutputString += output;
     OutputString += L'\n';
@@ -61,13 +61,13 @@ void WriteInInfo(const wchar_t* output)
 
 int main()
 {
-    _setmode(_fileno(stdout), _O_U8TEXT);
+    _setmode(_fileno(stdout), _O_U16TEXT);
 
     ShowConsoleCursor(false);
 
     WriteInInfo(L"aa");
 
-    std::wcout << L"cunt";
+    std::wcout << L"cunt" << std::endl;
 
     system("pause");
     return 0;
