@@ -21,8 +21,9 @@ private:
 	wchar_t SeperatorChar;
 	uint8_t Padding;
 
-	// Section misc vars
-	DynamicArray<wchar_t> Content;
+	// Clearing
+	COORD OldBegin, OldEnd;
+
 public:
 	/// <summary>
 	/// Section with more customizability
@@ -30,7 +31,7 @@ public:
 	/// <param name="sectionSide"> - Side where the section will be</param>
 	/// <param name="seperatorChar"> - Character used to seperate outside and inside</param>
 	/// <param name="padding"> - how much space between inside content and seperator</param>
-	ConsoleSection(ConsoleSide sectionSide = Bottom, wchar_t seperatorChar = L'━', uint8_t padding = 1);
+	ConsoleSection(ConsoleSide sectionSide = Bottom, uint8_t padding = 1, wchar_t seperatorChar = L'━');
 
 	/// <summary>
 	/// Will change the content to the provided array
@@ -38,9 +39,11 @@ public:
 	/// <param name="output"> - the wide char array to overwrite with</param>
 	void Overwrite(const wchar_t* output);
 
+	void TestFill();
+
 	/// <summary>
 	/// Will add to the current array
 	/// </summary>
 	/// <param name="output"> - The array to append</param>
-	void Append(const wchar_t* output);
+	//void Append(const wchar_t* output);
 };

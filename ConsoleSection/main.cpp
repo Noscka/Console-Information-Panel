@@ -10,14 +10,18 @@ int main()
 
     //ShowConsoleCursor(false);
 
-    ConsoleSection CS = ConsoleSection();
+    ConsoleSection CS = ConsoleSection(Bottom, 0);
 
-    CS.Append(L"aa\n");
-    CS.Append(L"gwagwa\n");
-    CS.Append(L"552151\n");
-    CS.Append(L"5521gg51\n");
+    CS.Overwrite(L"agag\ngwag,gwaga,gaw,g\nfawfaw\n");
 
     std::wcout << L"cunt" << std::endl;
+
+    CS.TestFill();
+
+    //while (true)
+    //{
+    //    CS.Overwrite(L"agag\ngwag,gwaga,gaw,g\nfawfaw\n");
+    //}
 
     system("pause");
     return 0;

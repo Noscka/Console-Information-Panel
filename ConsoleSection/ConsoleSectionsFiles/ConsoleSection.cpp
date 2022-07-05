@@ -26,12 +26,23 @@ COORD GetConsoleCursorPosition(HANDLE hConsoleOutput)
     }
 }
 
-ConsoleSection::ConsoleSection(ConsoleSide sectionSide, wchar_t seperatorChar, uint8_t padding)
+ConsoleSection::ConsoleSection(ConsoleSide sectionSide, uint8_t padding, wchar_t seperatorChar)
 {
     SectionSide = sectionSide;
     SeperatorChar = seperatorChar;
     Padding = padding;
-    Content = DynamicArray<wchar_t>(10, 30);
+}
+
+void ConsoleSection::TestFill()
+{
+    COORD tl = OldBegin;
+    CONSOLE_SCREEN_BUFFER_INFO s;
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleScreenBufferInfo(console, &s);
+    DWORD written, cells = (s.srWindow.Right - s.srWindow.Left + 1) * (OldEnd.Y - OldBegin.Y);
+    FillConsoleOutputCharacterW(console, L'╳', cells, tl, &written);
+    FillConsoleOutputAttribute(console, s.wAttributes, cells, tl, &written);
+    //SetConsoleCursorPosition(console, tl);
 }
 
 void ConsoleSection::Overwrite(const wchar_t* output)
@@ -45,68 +56,86 @@ void ConsoleSection::Overwrite(const wchar_t* output)
     columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
     rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
-    /* Get cursor coords to return to*/
-    COORD OriginalCoords = { GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).X, GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).Y };
-    COORD WritingCoords = { 0,rows - 3 };
-
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), WritingCoords);
-
-    std::wstring OutputString = std::wstring(columns, L'━');
-
-    OutputString += L'\n';
-    OutputString += output;
-    OutputString += L'\n';
-
-    wprintf(OutputString.c_str());
-
-    Content.Array = (wchar_t*)output;
-
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), OriginalCoords);
-}
-
-void ConsoleSection::Append(const wchar_t* output)
-{
+    /* Calculate amoutn of lines to use for the section*/
+    int NewLineCount = 0;
+    
     int i = 0;
     while (true)
     {
         if (output[i] == NULL)
             break;
-        Content.Append(output[i]);
-        i++;
-    }
 
-    /* Get console rows and columns*/
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-
-    int rows, columns;
-
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-
-    std::wstring OutputString = std::wstring(columns, SeperatorChar);
-
-    OutputString += L'\n';
-    OutputString += Content.Array;
-    OutputString += L'\n';
-
-    int NewLineCount = 0;
-
-    for (wchar_t ch : Content)
-    {
-        if (ch == '\n')
+        if (output[i] == '\n')
             NewLineCount++;
+
+        i++;
     }
 
     /* Get cursor coords to return to*/
     COORD OriginalCoords = { GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).X, GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).Y };
-    COORD WritingCoords = { 0,rows - (NewLineCount+Padding) };
+    COORD WritingCoords = { 0,rows - (NewLineCount + 2*Padding)-1 };
 
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), WritingCoords);
-    
+
+    std::wstring OutputString = std::wstring(columns, L'━');
+
+    OutputString += std::wstring(Padding+1, L'\n');
+    OutputString += output;
+    OutputString += std::wstring(Padding, L'\n');
 
     wprintf(OutputString.c_str());
 
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), OriginalCoords);
+    OldBegin = WritingCoords;
+    OldEnd = { (SHORT)columns, GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).Y };
 
+    //Content.Array = (wchar_t*)output;
+
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), OriginalCoords);
 }
+
+//void ConsoleSection::Append(const wchar_t* output)
+//{
+//    int i = 0;
+//    while (true)
+//    {
+//        if (output[i] == NULL)
+//            break;
+//        Content.Append(output[i]);
+//        i++;
+//    }
+//
+//    /* Get console rows and columns*/
+//    CONSOLE_SCREEN_BUFFER_INFO csbi;
+//
+//    int rows, columns;
+//
+//    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+//    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+//    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+//
+//    std::wstring OutputString = std::wstring(columns, SeperatorChar);
+//
+//    OutputString += L'\n';
+//    OutputString += Content.Array;
+//    OutputString += L'\n';
+//
+//    int NewLineCount = 0;
+//
+//    for (wchar_t ch : Content)
+//    {
+//        if (ch == '\n')
+//            NewLineCount++;
+//    }
+//
+//    /* Get cursor coords to return to*/
+//    COORD OriginalCoords = { GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).X, GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).Y };
+//    COORD WritingCoords = { 0,rows - (NewLineCount+Padding) };
+//
+//    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), WritingCoords);
+//    
+//
+//    wprintf(OutputString.c_str());
+//
+//    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), OriginalCoords);
+//
+//}
