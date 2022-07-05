@@ -4,6 +4,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include "../DynamicArray (different project)/DynamicArray.h"
+#include <thread>
 
 enum ConsoleSide : USHORT
 {
@@ -20,6 +21,10 @@ private:
 	ConsoleSide SectionSide;
 	wchar_t SeperatorChar;
 	uint8_t Padding;
+
+	// Section Misc
+	DynamicArray<wchar_t> ContentArray;
+	int NewLineCount;
 
 	// Clearing
 	COORD OldBegin, OldEnd;
@@ -41,9 +46,11 @@ public:
 
 	void Refresh();
 
+	void WatchConsole();
+
 	/// <summary>
 	/// Will add to the current array
 	/// </summary>
 	/// <param name="output"> - The array to append</param>
-	//void Append(const wchar_t* output);
+	void Append(const wchar_t* output);
 };

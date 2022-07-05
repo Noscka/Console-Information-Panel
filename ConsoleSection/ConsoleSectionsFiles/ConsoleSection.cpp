@@ -31,6 +31,7 @@ ConsoleSection::ConsoleSection(ConsoleSide sectionSide, uint8_t padding, wchar_t
     SectionSide = sectionSide;
     SeperatorChar = seperatorChar;
     Padding = padding;
+    ContentArray = DynamicArray<wchar_t>(20, 20);
 }
 
 void ConsoleSection::Refresh()
@@ -57,8 +58,10 @@ void ConsoleSection::Overwrite(const wchar_t* output)
     rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
     /* Calculate amoutn of lines to use for the section*/
-    int NewLineCount = 0;
+    NewLineCount = 0;
     
+    ContentArray.Clear();
+
     int i = 0;
     while (true)
     {
@@ -68,6 +71,7 @@ void ConsoleSection::Overwrite(const wchar_t* output)
         if (output[i] == '\n')
             NewLineCount++;
 
+        ContentArray.Append(output[i]);
         i++;
     }
 
@@ -80,7 +84,7 @@ void ConsoleSection::Overwrite(const wchar_t* output)
     std::wstring OutputString = std::wstring(columns, L'━');
 
     OutputString += std::wstring(Padding+1, L'\n');
-    OutputString += output;
+    OutputString += ContentArray.Array;
     OutputString += std::wstring(Padding, L'\n');
 
     Refresh();
@@ -94,49 +98,50 @@ void ConsoleSection::Overwrite(const wchar_t* output)
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), OriginalCoords);
 }
 
-//void ConsoleSection::Append(const wchar_t* output)
-//{
-//    int i = 0;
-//    while (true)
-//    {
-//        if (output[i] == NULL)
-//            break;
-//        Content.Append(output[i]);
-//        i++;
-//    }
-//
-//    /* Get console rows and columns*/
-//    CONSOLE_SCREEN_BUFFER_INFO csbi;
-//
-//    int rows, columns;
-//
-//    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-//    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-//    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-//
-//    std::wstring OutputString = std::wstring(columns, SeperatorChar);
-//
-//    OutputString += L'\n';
-//    OutputString += Content.Array;
-//    OutputString += L'\n';
-//
-//    int NewLineCount = 0;
-//
-//    for (wchar_t ch : Content)
-//    {
-//        if (ch == '\n')
-//            NewLineCount++;
-//    }
-//
-//    /* Get cursor coords to return to*/
-//    COORD OriginalCoords = { GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).X, GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).Y };
-//    COORD WritingCoords = { 0,rows - (NewLineCount+Padding) };
-//
-//    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), WritingCoords);
-//    
-//
-//    wprintf(OutputString.c_str());
-//
-//    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), OriginalCoords);
-//
-//}
+void ConsoleSection::Append(const wchar_t* output)
+{
+    /* Calculate amoutn of lines to use for the section*/
+    NewLineCount++;
+    int i = 0;
+    while (true)
+    {
+        if (output[i] == NULL)
+            break;
+
+        if (output[i] == '\n')
+            NewLineCount++;
+
+        ContentArray.Append(output[i]);
+        i++;
+    }
+
+    /* Get console rows and columns*/
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    int rows, columns;
+
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+
+    std::wstring OutputString = std::wstring(columns, SeperatorChar);
+
+    OutputString += L'\n';
+    OutputString += ContentArray.Array;
+    OutputString += L'\n';
+
+    /* Get cursor coords to return to*/
+    COORD OriginalCoords = { GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).X, GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).Y };
+    COORD WritingCoords = { 0,rows - (NewLineCount + 2 * Padding) - 1 };
+
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), WritingCoords);
+    
+    Refresh();
+    wprintf(OutputString.c_str());
+
+    OldBegin = WritingCoords;
+    OldEnd = { (SHORT)columns, GetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE)).Y };
+
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), OriginalCoords);
+
+}
