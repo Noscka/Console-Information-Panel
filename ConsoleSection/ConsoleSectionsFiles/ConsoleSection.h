@@ -39,7 +39,7 @@ public:
 	/// <param name="output"> - the wide char array to overwrite with</param>
 	void Overwrite(const wchar_t* output);
 
-	void TestFill();
+	void Refresh();
 
 	/// <summary>
 	/// Will add to the current array

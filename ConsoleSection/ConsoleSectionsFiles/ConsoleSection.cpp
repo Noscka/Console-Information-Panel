@@ -33,14 +33,14 @@ ConsoleSection::ConsoleSection(ConsoleSide sectionSide, uint8_t padding, wchar_t
     Padding = padding;
 }
 
-void ConsoleSection::TestFill()
+void ConsoleSection::Refresh()
 {
     COORD tl = OldBegin;
     CONSOLE_SCREEN_BUFFER_INFO s;
     HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(console, &s);
     DWORD written, cells = (s.srWindow.Right - s.srWindow.Left + 1) * (OldEnd.Y - OldBegin.Y);
-    FillConsoleOutputCharacterW(console, L'╳', cells, tl, &written);
+    FillConsoleOutputCharacterW(console, L' ', cells, tl, &written);
     FillConsoleOutputAttribute(console, s.wAttributes, cells, tl, &written);
     //SetConsoleCursorPosition(console, tl);
 }
@@ -83,6 +83,7 @@ void ConsoleSection::Overwrite(const wchar_t* output)
     OutputString += output;
     OutputString += std::wstring(Padding, L'\n');
 
+    Refresh();
     wprintf(OutputString.c_str());
 
     OldBegin = WritingCoords;

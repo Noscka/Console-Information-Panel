@@ -18,10 +18,11 @@ int main()
 
     CS.TestFill();
 
-    //while (true)
-    //{
-    //    CS.Overwrite(L"agag\ngwag,gwaga,gaw,g\nfawfaw\n");
-    //}
+    while (true)
+    {
+        CS.Overwrite(L"agag\ngwag,gwaga,gaw,g\nfawfaw\n");
+        Sleep(100);
+    }
 
     system("pause");
     return 0;
